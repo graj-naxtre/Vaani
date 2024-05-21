@@ -12,7 +12,11 @@ import com.example.musify.presentation.view_model.HomeScreenViewModel
 import com.example.musify.presentation.view_model.MusifyUiState
 
 @Composable
-fun HomeScreenV2(viewModel: HomeScreenViewModel) {
+fun HomeScreenV2(
+    viewModel: HomeScreenViewModel,
+    onSearchClick: () -> Unit,
+    onPlaylistClick: () -> Unit
+) {
     val state by viewModel.state.collectAsState()
 
     when (val response = state) {
@@ -29,7 +33,7 @@ fun HomeScreenV2(viewModel: HomeScreenViewModel) {
         }
 
         is MusifyUiState.SUCCESS -> {
-            HomeScreenContent(response.data, viewModel)
+            HomeScreenContent(response.data, viewModel, onSearchClick, onPlaylistClick)
         }
     }
 }

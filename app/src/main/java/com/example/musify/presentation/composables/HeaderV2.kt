@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HeaderV2() {
+fun HeaderV2(onSearchClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -28,7 +28,7 @@ fun HeaderV2() {
             .padding(vertical = 20.dp, horizontal = 20.dp),
     ) {
         Text(text = "Emulsify", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-        IconButton(onClick = {  }) {
+        IconButton(onClick = { onSearchClick() }) {
             Icon(
                 imageVector = Icons.Filled.Search,
                 contentDescription = "Search icon",

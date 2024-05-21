@@ -10,7 +10,7 @@ import androidx.room.Relation
 @Entity
 data class Playlist(
     @PrimaryKey(autoGenerate = true)
-    val playlistId: Long,
+    val playlistId: Long = 0L,
     @ColumnInfo(name = "playlist_name")
     val playlistName: String,
 )
@@ -18,7 +18,7 @@ data class Playlist(
 @Entity
 data class Song(
     @PrimaryKey(autoGenerate = true)
-    val mediaId: Long,
+    val mediaId: Long = 0L,
     @ColumnInfo(name = "media_name")
     val mediaName: String,
     @ColumnInfo(name = "media_artist_name")

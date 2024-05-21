@@ -53,7 +53,8 @@ fun MiniPlayer(
     mediaPlayerStateHandler: MediaPlayerStateHandler,
     onClick: () -> Unit,
     viewModel: HomeScreenViewModel,
-    currentProgress: State<Long>
+    currentProgress: State<Long>,
+    onPlaylistClick: () -> Unit
 ) {
     val isPlaying =
         mediaPlayerStateHandler.playerState.value == PlaybackState.PLAYING || mediaPlayerStateHandler.playerState.value == PlaybackState.READY
@@ -141,7 +142,7 @@ fun MiniPlayer(
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     IconButton(
-                        onClick = { }, modifier = Modifier
+                        onClick = { onPlaylistClick() }, modifier = Modifier
                             .aspectRatio(1f / 1f)
                     ) {
                         Image(

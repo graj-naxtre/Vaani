@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,20 +48,25 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 @Composable
-fun HomeScreenContent(data: List<AppFolderWithSongs>, viewModel: HomeScreenViewModel) {
+fun HomeScreenContent(
+    data: List<AppFolderWithSongs>,
+    viewModel: HomeScreenViewModel,
+    onSearchClick: () -> Unit,
+    onPlaylistClick: () -> Unit
+) {
     val pagerState = rememberPagerState(pageCount = data.size)
     val scope = rememberCoroutineScope()
     var showMiniPlayer by remember { mutableStateOf(false) }
     var showMusicPlayer by remember { mutableStateOf(false) }
-    var currentSongIndex = remember { mutableStateOf(0) }
+    val currentSongIndex = remember { mutableIntStateOf(0) }
 
-    var currentProgress = remember {
+    val currentProgress = remember {
         mutableLongStateOf(0L)
     }
 
-    LaunchedEffect(key1 = currentSongIndex.value) {
+    LaunchedEffect(key1 = currentSongIndex.intValue) {
         viewModel.myAudioPlayer.getCurrentPlaybackProgressFlow().collectLatest { currentPosition ->
-            currentProgress.value = currentPosition
+            currentProgress.longValue = currentPosition
         }
     }
 
@@ -68,7 +74,7 @@ fun HomeScreenContent(data: List<AppFolderWithSongs>, viewModel: HomeScreenViewM
 
     Scaffold(
         topBar = {
-            HeaderV2()
+            HeaderV2(onSearchClick = onSearchClick)
         },
         floatingActionButton = { ActionButton() },
         bottomBar = {
@@ -78,7 +84,8 @@ fun HomeScreenContent(data: List<AppFolderWithSongs>, viewModel: HomeScreenViewM
                     mediaPlayerStateHandler = viewModel.mediaPlayerStateHandler,
                     onClick = { showMusicPlayer = true; },
                     viewModel = viewModel,
-                    currentProgress = currentProgress
+                    currentProgress = currentProgress,
+                    onPlaylistClick = onPlaylistClick
                 )
             }
         }
@@ -141,7 +148,7 @@ fun HomeScreenContent(data: List<AppFolderWithSongs>, viewModel: HomeScreenViewM
                             audioFileInfo = audioFile,
                             viewModel = viewModel,
                             showMiniPlayer = { showMiniPlayer = true },
-                            songClick = {currentSongIndex.value = it},
+                            songClick = { currentSongIndex.intValue = it },
                             optionClick = {}
                         )
                     }
@@ -150,7 +157,7 @@ fun HomeScreenContent(data: List<AppFolderWithSongs>, viewModel: HomeScreenViewM
 
             if (showMusicPlayer) {
                 MusicPlayer(
-                    currentSongIndex = currentSongIndex.value,
+                    currentSongIndex = currentSongIndex.intValue,
                     currentProgress = currentProgress,
                     totalDuration = viewModel.mediaPlayerStateHandler.songDuration.value,
                     showBottomSheet = { showMusicPlayer = it },

@@ -17,6 +17,9 @@ interface PlaylistAndSongDao {
     @Insert
     suspend fun createPlaylist(playlist: Playlist) : Long
 
+    @Query("SELECT * FROM Playlist")
+    suspend fun getAllPlaylist() : List<Playlist>
+
     // insert song, return songId
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSong(song: Song) : Long
@@ -30,8 +33,11 @@ interface PlaylistAndSongDao {
     suspend fun addSongToPlaylist(crossRef: PlaylistSongCrossRef)
 
     // remove song from playlist
+    @Transaction
     @Delete
-    suspend fun removeSongFromPlaylist(crossRef: PlaylistSongCrossRef)
+    suspend fun removeSongFromPlaylist(crossRef: PlaylistSongCrossRef){
+        _removeSongIfNotInAnyPlaylist(mediaId = crossRef.mediaId)
+    }
 
     // delete song
     @Query("DELETE FROM Song WHERE mediaId = :mediaId")
@@ -39,7 +45,7 @@ interface PlaylistAndSongDao {
 
     // remove song if not present in any playlist
     @Transaction
-    suspend fun removeSongIfNotInAnyPlaylist(mediaId: Long){
+    suspend fun _removeSongIfNotInAnyPlaylist(mediaId: Long){
         val count = _getPlaylistContainingSong(mediaId)
         if(count == 0){
             // if not present then delete
@@ -53,10 +59,10 @@ interface PlaylistAndSongDao {
 
     // get All songs from a particular playlist with playlistId
     @Transaction
-    @Query("SELECT * FROM playlist where playlistId = :playlistId")
+    @Query("SELECT * FROM Playlist where playlistId = :playlistId")
     suspend fun getAllSongsFromPlaylist(playlistId: Long) : PlaylistWithSongs
 
     // delete a playlist by playlistId
-    @Query("DELETE FROM playlist WHERE playlistId = :playlistId")
+    @Query("DELETE FROM Playlist WHERE playlistId = :playlistId")
     suspend fun deletePlaylist(playlistId: Long)
 }

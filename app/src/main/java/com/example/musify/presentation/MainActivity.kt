@@ -24,8 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
 import com.example.musify.R
 import com.example.musify.domain.service.PlaybackService
+import com.example.musify.presentation.navigation.AppNavigation
 import com.example.musify.presentation.screens.HomeScreen
 import com.example.musify.presentation.screens.HomeScreenV2
 import com.example.musify.presentation.theme.MusifyTheme
@@ -58,8 +60,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-//                    HomeScreen(viewModel)
-                    HomeScreenV2(viewModel = viewModel)
+                    val navController = rememberNavController()
+                    AppNavigation(navController = navController)
                 }
             }
         }
