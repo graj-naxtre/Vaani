@@ -52,14 +52,14 @@ object MediaModule {
         return MediaSession.Builder(context, player).build()
     }
 
-    @Provides
-    @Singleton
-    fun provideMediaController(
-        @ApplicationContext context: Context,
-        session: MediaSession
-    ): ListenableFuture<MediaController> {
-        return MediaController.Builder(context, session.token).buildAsync()
-    }
+//    @Provides
+//    @Singleton
+//    fun provideMediaController(
+//        @ApplicationContext context: Context,
+//        session: MediaSession
+//    ): ListenableFuture<MediaController> {
+//        return MediaController.Builder(context, session.token).buildAsync()
+//    }
 
     @Provides
     @Singleton

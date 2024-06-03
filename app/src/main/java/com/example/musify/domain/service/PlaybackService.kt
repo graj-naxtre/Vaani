@@ -27,13 +27,17 @@ class PlaybackService : MediaSessionService() {
         myMediaSession = mediaSession
     }
 
-    fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel("1234", "Musify App", NotificationManager.IMPORTANCE_HIGH)
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+    // grant access to media session to client by return mediaSession
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = myMediaSession
+
+    // Remember to release the player and media session in onDestroy
+    override fun onDestroy() {
+        myMediaSession?.run {
+            myAudioPlayer.release()
+            release()
+            myMediaSession = null
         }
+        super.onDestroy()
     }
 
     // The user dismissed the app from the recent tasks
@@ -47,15 +51,13 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    override fun onGetSession(p0: MediaSession.ControllerInfo): MediaSession = mediaSession
-
-    // Remember to release the player and media session in onDestroy
-    override fun onDestroy() {
-        myMediaSession?.run {
-            myAudioPlayer.release()
-            release()
+    fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel =
+                NotificationChannel("1234", "Musify App", NotificationManager.IMPORTANCE_HIGH)
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
-        super.onDestroy()
     }
 
     private fun stopForegroundNotificationService(mediaSessionService: MediaSessionService) {

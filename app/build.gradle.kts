@@ -86,10 +86,11 @@ dependencies {
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.35.0-alpha")
 
     // exoplayer
-    implementation("androidx.media3:media3-exoplayer:1.2.1")
-    implementation("androidx.media3:media3-exoplayer-dash:1.2.1")
-    implementation("androidx.media3:media3-ui:1.2.1")
-    implementation("androidx.media3:media3-session:1.2.1")
+    val exoplayer_version = "1.3.1"
+    implementation("androidx.media3:media3-exoplayer:$exoplayer_version")
+    implementation("androidx.media3:media3-exoplayer-dash:$exoplayer_version")
+    implementation("androidx.media3:media3-ui:$exoplayer_version")
+    implementation("androidx.media3:media3-session:$exoplayer_version")
 
     // pager
     implementation ("com.google.accompanist:accompanist-pager:0.13.0")

@@ -83,19 +83,19 @@ fun PlaylistScreen(
                 Image(imageVector = Icons.Filled.ArrowBack, contentDescription = "back icon")
             }
         },
-        modifier = Modifier.background(
-            Brush.linearGradient(
-                listOf(
-                    colorResource(id = R.color.top_color),
-                    colorResource(id = R.color.bottom_color)
-                )
-            )
-        )
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            colorResource(id = R.color.top_color),
+                            colorResource(id = R.color.bottom_color)
+                        )
+                    )
+                )
                 .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

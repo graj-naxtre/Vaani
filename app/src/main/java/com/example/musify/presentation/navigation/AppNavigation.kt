@@ -11,11 +11,13 @@ import com.example.musify.presentation.screens.PlaylistSongsScreen
 import com.example.musify.presentation.screens.SearchScreen
 import com.example.musify.presentation.view_model.HomeScreenViewModel
 import com.example.musify.presentation.view_model.PlaylistViewModel
+import com.example.musify.presentation.view_model.SearchViewModel
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
     val homeViewModel: HomeScreenViewModel = viewModel<HomeScreenViewModel>()
     val playlistViewModel: PlaylistViewModel = viewModel<PlaylistViewModel>()
+    val searchViewModel: SearchViewModel = viewModel<SearchViewModel>()
 
     NavHost(navController = navController, startDestination = "home_screen") {
         composable(route = "home_screen") {
@@ -32,7 +34,9 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(route = "search_screen") {
-            SearchScreen()
+            SearchScreen(
+                viewModel = searchViewModel,
+                onBackClick = { navController.popBackStack() })
         }
 
         composable(

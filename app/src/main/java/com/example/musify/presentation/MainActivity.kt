@@ -1,6 +1,7 @@
 package com.example.musify.presentation
 
 import android.app.ActivityManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -24,12 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.example.musify.R
 import com.example.musify.domain.service.PlaybackService
 import com.example.musify.presentation.navigation.AppNavigation
-import com.example.musify.presentation.screens.HomeScreen
-import com.example.musify.presentation.screens.HomeScreenV2
 import com.example.musify.presentation.theme.MusifyTheme
 import com.example.musify.presentation.view_model.HomeScreenViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -52,6 +53,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener({} )
         setContent {
             MusifyTheme {
                 SetStatusBarColor(color = colorResource(id = R.color.top_color))
@@ -120,8 +124,8 @@ class MainActivity : ComponentActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if(requestCode == 101){
-            if(grantResults.size > 0){
+        if (requestCode == 101) {
+            if (grantResults.size > 0) {
                 val write = grantResults[0] == PackageManager.PERMISSION_GRANTED
                 val read = grantResults[1] == PackageManager.PERMISSION_GRANTED
 
@@ -138,7 +142,7 @@ class MainActivity : ComponentActivity() {
         startService(Intent(this, PlaybackService::class.java))
     }
 
-    private fun foregroundServiceRunning(): Boolean {
+    private fun isForegroundServiceRunning(): Boolean {
         val activityManager =
             applicationContext?.getSystemService(ComponentActivity.ACTIVITY_SERVICE) as ActivityManager
         for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
@@ -153,16 +157,10 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         viewModel.myAudioPlayer.exoPlayer.removeListener(viewModel.mediaPlayerStateHandler)
         viewModel.myAudioPlayer.exoPlayer.release()
-        if (!foregroundServiceRunning()) {
+        if (!isForegroundServiceRunning()) {
             stopService(Intent(this, PlaybackService::class.java))
         }
     }
-
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        viewModel.myAudioPlayer.exoPlayer.removeListener(viewModel.mediaPlayerStateHandler)
-//        viewModel.myAudioPlayer.exoPlayer.release()
-//    }
 }
 
 @Composable
