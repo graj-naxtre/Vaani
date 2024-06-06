@@ -1,7 +1,7 @@
 package com.example.musify.presentation.utils
 
 import android.media.MediaMetadataRetriever
-import com.example.musify.presentation.view_model.AudioFileInfo
+import com.example.musify.presentation.viewmodels.AudioFileInfo
 import java.io.File
 
 fun File.toAudiFileInfo(): AudioFileInfo {
@@ -9,8 +9,8 @@ fun File.toAudiFileInfo(): AudioFileInfo {
     retriever.setDataSource(this.path)
 
     val artistName = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-
     val durationString = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+
     val duration = durationString?.toLongOrNull() ?: 0
 
     val mediaImage = retriever.embeddedPicture

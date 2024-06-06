@@ -1,17 +1,16 @@
 package com.example.musify.domain.player
 
-import android.content.Context
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.example.musify.presentation.view_model.AudioFileInfo
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.example.musify.presentation.viewmodels.AudioFileInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+/*
 class MyAudioPlayer @Inject constructor(
     val exoPlayer: ExoPlayer,
     val mediaPlayerStateHandler: MediaPlayerStateHandler,
@@ -112,6 +111,7 @@ class MyAudioPlayer @Inject constructor(
         exoPlayer.clearMediaItems()
     }
 }
+*/
 
 /*
 private fun createNotificationChannel() {

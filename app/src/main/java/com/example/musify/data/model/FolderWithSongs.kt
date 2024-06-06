@@ -1,7 +1,7 @@
 package com.example.musify.data.model
 
 
-import com.example.musify.presentation.view_model.AudioFileInfo
+import com.example.musify.presentation.viewmodels.AudioFileInfo
 import com.example.musify.presentation.utils.toAudiFileInfo
 import java.io.File
 import javax.annotation.concurrent.Immutable

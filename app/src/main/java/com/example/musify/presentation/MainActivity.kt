@@ -1,7 +1,5 @@
 package com.example.musify.presentation
 
-import android.app.ActivityManager
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -15,30 +13,36 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.example.musify.R
-import com.example.musify.domain.service.PlaybackService
-import com.example.musify.presentation.navigation.AppNavigation
-import com.example.musify.presentation.theme.MusifyTheme
-import com.example.musify.presentation.view_model.HomeScreenViewModel
+import com.example.musify.data.service.PlaybackService
+import com.example.musify.presentation.composables.MiniPlayer
+import com.example.musify.presentation.ui.navigation.AppNavigation
+import com.example.musify.presentation.ui.navigation.Destination
+import com.example.musify.presentation.ui.song.MusicPlayer
+import com.example.musify.presentation.ui.theme.MusifyTheme
+import com.example.musify.presentation.viewmodels.SharedViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel: HomeScreenViewModel by viewModels()
+    private val sharedViewModel: SharedViewModel by viewModels()
 
     val storagePermissionResultLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -53,9 +57,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        controllerFuture.addListener({} )
         setContent {
             MusifyTheme {
                 SetStatusBarColor(color = colorResource(id = R.color.top_color))
@@ -64,14 +65,38 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
+                    val musicControllerUiState = sharedViewModel.musicControllerUiState
+                    var showMusicPlayer by remember { mutableStateOf(false) }
                     val navController = rememberNavController()
-                    AppNavigation(navController = navController)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        AppNavigation(navController = navController)
+                        if (showMusicPlayer) {
+                            MusicPlayer(
+                                onEvent = sharedViewModel::onEvent,
+                                state = musicControllerUiState,
+                                showBottomSheet = { showMusicPlayer = it }
+                            )
+                        }
+                    }
+                    MiniPlayer(
+                        state = musicControllerUiState,
+                        onEvent = sharedViewModel::onEvent,
+                        onClick = { showMusicPlayer = true },
+                        onPlaylistClick = {
+                            navController.navigate(Destination.Playlist.route) {
+                                popUpTo(Destination.Home.route) {
+                                    inclusive = false
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
-
         checkStoragePermissions()
-        startService()
     }
 
     private fun checkStoragePermissions() {
@@ -118,48 +143,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 101) {
-            if (grantResults.size > 0) {
-                val write = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                val read = grantResults[1] == PackageManager.PERMISSION_GRANTED
-
-                if (read && write) {
-                    Toast.makeText(this, "Storage Permissions Granted", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, "Storage Permissions Denied", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    private fun startService() {
-        startService(Intent(this, PlaybackService::class.java))
-    }
-
-    private fun isForegroundServiceRunning(): Boolean {
-        val activityManager =
-            applicationContext?.getSystemService(ComponentActivity.ACTIVITY_SERVICE) as ActivityManager
-        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) {
-            if (PlaybackService::class.java.name == service.service.className) {
-                return true
-            }
-        }
-        return false
-    }
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        if (requestCode == 101) {
+//            if (grantResults.size > 0) {
+//                val write = grantResults[0] == PackageManager.PERMISSION_GRANTED
+//                val read = grantResults[1] == PackageManager.PERMISSION_GRANTED
+//
+//                if (read && write) {
+//                    Toast.makeText(this, "Storage Permissions Granted", Toast.LENGTH_LONG).show()
+//                } else {
+//                    Toast.makeText(this, "Storage Permissions Denied", Toast.LENGTH_LONG).show()
+//                }
+//            }
+//        }
+//    }
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.myAudioPlayer.exoPlayer.removeListener(viewModel.mediaPlayerStateHandler)
-        viewModel.myAudioPlayer.exoPlayer.release()
-        if (!isForegroundServiceRunning()) {
-            stopService(Intent(this, PlaybackService::class.java))
-        }
+        sharedViewModel.destroyMediaController()
+        stopService(Intent(this, PlaybackService::class.java))
     }
 }
 
