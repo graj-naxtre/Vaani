@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,8 +36,10 @@ import com.example.musify.R
 import com.example.musify.data.room_db.entity.Playlist
 import com.example.musify.presentation.delegates.PlaylistUiState
 import com.example.musify.presentation.ui.playlist.component.CreatePlaylist
+import com.example.musify.presentation.ui.playlist.component.DeletePlaylist
 import com.example.musify.presentation.ui.playlist.component.PlaylistHeader
 import com.example.musify.presentation.ui.playlist.component.PlaylistItem
+import com.example.musify.presentation.viewmodels.AudioFileInfo
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,11 +58,16 @@ fun PlaylistScreen(
     var listOfPlaylist by remember {
         mutableStateOf<List<Playlist>>(emptyList())
     }
+    var showOptionsSheet by remember {
+        mutableStateOf(Pair<Long?, Boolean>(first = null, second = false))
+    }
+    var refresh by rememberSaveable {mutableStateOf(false)}
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = refresh) {
         viewModel.getAllPlaylist {
             listOfPlaylist = it
         }
+        refresh = false
     }
 
     Scaffold(
@@ -100,7 +108,8 @@ fun PlaylistScreen(
                         items(items = listOfPlaylist) { playlist ->
                             PlaylistItem(
                                 playlistName = playlist.playlistName,
-                                onClick = { onPlaylistClick(playlist.playlistId) })
+                                onClick = { onPlaylistClick(playlist.playlistId) },
+                                onLongClick = {showOptionsSheet = showOptionsSheet.copy(first = playlist.playlistId, second = true)})
                         }
                     }
                 }
@@ -133,6 +142,7 @@ fun PlaylistScreen(
                         Button(
                             onClick = {
                                 viewModel.createPlaylist(newPlaylistName) {}
+                                refresh = true
                                 isDialogOpen = false
                             },
                             colors = ButtonDefaults.buttonColors(
@@ -144,6 +154,14 @@ fun PlaylistScreen(
                             Text(text = "Create")
                         }
                     }
+                }
+            }
+
+            if(showOptionsSheet.second){
+                DeletePlaylist(show = {showOptionsSheet = showOptionsSheet.copy(second = it)}) {
+                    viewModel.onEvent(PlaylistEvent.OnDeletePlaylist(showOptionsSheet.first))
+                    refresh = true
+                    showOptionsSheet = showOptionsSheet.copy(second = false)
                 }
             }
         }

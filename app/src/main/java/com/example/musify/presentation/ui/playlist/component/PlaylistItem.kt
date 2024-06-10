@@ -1,8 +1,9 @@
 package com.example.musify.presentation.ui.playlist.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,8 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.musify.R
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlaylistItem(playlistName: String, onClick: () -> Unit) {
+fun PlaylistItem(playlistName: String, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -30,7 +33,9 @@ fun PlaylistItem(playlistName: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.DarkGray, shape = RoundedCornerShape(5.dp))
-            .clickable { onClick() }
+            .then(remember {
+                Modifier.combinedClickable(onClick = { onClick() }, onLongClick = { onLongClick() })
+            })
             .padding(vertical = 10.dp, horizontal = 15.dp)
     ) {
         Box(

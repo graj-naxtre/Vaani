@@ -40,6 +40,10 @@ class PlaylistViewModel @Inject constructor(
                     })
                 }
             }
+
+            is PlaylistEvent.OnDeletePlaylist -> event.playlistId?.let {
+                deletePlaylist(it)
+            }
         }
     }
 
