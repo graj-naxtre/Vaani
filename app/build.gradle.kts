@@ -74,6 +74,7 @@ dependencies {
 
     //hilt
     implementation("com.google.dagger:hilt-android:2.49")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     kapt("com.google.dagger:hilt-compiler:2.49")
 
     //viewmodel
@@ -110,6 +111,9 @@ dependencies {
 
     //placeholder
     implementation("com.google.accompanist:accompanist-placeholder-material:0.13.0")
+
+    //lottie
+    implementation("com.airbnb.android:lottie-compose:6.4.0")
 }
 
 kapt {

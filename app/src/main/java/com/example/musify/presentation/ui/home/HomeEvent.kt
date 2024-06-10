@@ -9,4 +9,5 @@ sealed class HomeEvent {
     data object FetchSongs: HomeEvent()
     data class onFolderIndexChange(val index: Int) : HomeEvent()
     data class OnSongSelected(val selectedSong: AudioFileInfo): HomeEvent()
+    data class AddSongToPlaylist(val songToAddInPlaylist: AudioFileInfo): HomeEvent()
 }

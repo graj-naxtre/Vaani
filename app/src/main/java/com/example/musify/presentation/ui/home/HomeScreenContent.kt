@@ -2,10 +2,12 @@ package com.example.musify.presentation.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -41,16 +43,13 @@ fun HomeScreenContent(
     uiState: HomeUiState,
     onEvent: (HomeEvent) -> Unit,
     onSearchClick: () -> Unit,
+    onAddToPlaylistClick: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = uiState.folderWithSongs.size)
     val scope = rememberCoroutineScope()
     var showOptionsSheet by remember {
-        mutableStateOf(false)
+        mutableStateOf(Pair<AudioFileInfo?, Boolean>(first = null, second = false))
     }
-
-//    Scaffold(
-//        floatingActionButton = { ActionButton() },
-//    ) {}
     Column (modifier = Modifier.fillMaxSize()){
         HeaderV2(onSearchClick = onSearchClick)
         Column(
@@ -102,26 +101,33 @@ fun HomeScreenContent(
             }
             HorizontalPager(state = pagerState, verticalAlignment = Alignment.Top) { index ->
                 val songs = remember { uiState.folderWithSongs[index].songFiles }
-                LazyColumn {
-                    itemsIndexed(
-                        songs,
-                        key = { _: Int, item: AudioFileInfo -> item.fileName }) { _, audioFile ->
+                LazyColumn (contentPadding = PaddingValues(bottom = 80.dp)){
+                    items(
+                        items = songs,
+                        key = { item: AudioFileInfo -> item.fileName }) { audioFile ->
                         SongItem(
                             audioFileInfo = audioFile,
                             songClick = {
                                 onEvent(HomeEvent.OnSongSelected(audioFile));
                                 onEvent(HomeEvent.PlaySong)
                             },
-                            optionClick = {showOptionsSheet = it}
+                            optionClick = {value -> showOptionsSheet = showOptionsSheet.copy(first = audioFile, second = value)}
                         )
                     }
                 }
             }
 
-            if (showOptionsSheet) {
-                OptionsBottomSheet {
-                    showOptionsSheet = it
-                }
+            if (showOptionsSheet.second) {
+                OptionsBottomSheet(
+                    showOptions = { showOptionsSheet = showOptionsSheet.copy(second = it) },
+                    addToPlaylistClick = {
+                        scope.launch {
+                            onEvent(HomeEvent.AddSongToPlaylist(songToAddInPlaylist = showOptionsSheet.first!!))
+                            onAddToPlaylistClick()
+                        }
+                    },
+                    addToFavouritesClicked = {}
+                )
             }
         }
     }

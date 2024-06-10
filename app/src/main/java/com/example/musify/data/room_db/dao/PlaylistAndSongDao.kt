@@ -28,6 +28,9 @@ interface PlaylistAndSongDao {
     @Query("SELECT * FROM Song WHERE mediaId = :mediaId")
     suspend fun getSongId(mediaId: Long) : Song
 
+    @Query("SELECT mediaId FROM Song WHERE media_file_path = :filePath")
+    suspend fun getMediaId(filePath: String) : Long
+
     // add song to Playlist using songId and playlistId
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addSongToPlaylist(crossRef: PlaylistSongCrossRef)

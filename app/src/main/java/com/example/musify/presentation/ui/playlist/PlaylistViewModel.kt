@@ -1,5 +1,6 @@
 package com.example.musify.presentation.ui.playlist
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -23,8 +24,24 @@ class PlaylistViewModel @Inject constructor(
     private val musicController: MusicController
 ) :
     ViewModel(), PlaylistUiStateDelegate by playlistUiStateDelegate {
-    var playlistUiState by mutableStateOf(PlaylistUiState())
+    var playlistUiState by mutableStateOf(PlaylistState())
         private set
+
+    fun onEvent(event: PlaylistEvent) {
+        when (event) {
+            PlaylistEvent.OnPlay -> playSong()
+            is PlaylistEvent.OnSongSelected -> playlistUiState =
+                playlistUiState.copy(selectedSong = event.songSelected)
+
+            is PlaylistEvent.OnRemoveFromPlaylist -> {
+                if(event.playlistId != null && event.filePath != null){
+                    getMediaId(filePath = event.filePath, callback = {mediaId ->
+                        removeSongFromPlaylist(playlistId = event.playlistId, mediaId = mediaId)
+                    })
+                }
+            }
+        }
+    }
 
     private fun playSong() {
         // set media items if user played song from new playlist
@@ -61,7 +78,8 @@ class PlaylistViewModel @Inject constructor(
             playlistUiState =
                 playlistUiState.copy(
                     viewPlaylistSongs = audioFiles,
-                    viewPlaylistId = playlistId
+                    viewPlaylistName = playlistWithSongs.playlist.playlistName,
+                    viewPlaylistId = playlistId,
                 )
         }) { playlistAndSongDao.getAllSongsFromPlaylist(playlistId = playlistId) }
     }
@@ -72,18 +90,24 @@ class PlaylistViewModel @Inject constructor(
                 playlistAndSongDao.insertSong(audioFileInfo.toSongMapper())
             }
             val mediaId = result.await()
-            handleDatabaseResult {
+            handleDatabaseResult(databaseCall = {
                 playlistAndSongDao.addSongToPlaylist(
                     PlaylistSongCrossRef(
                         playlistId,
                         mediaId
                     )
                 )
-            }
+            })
         }
     }
 
-    fun removeSongFromPlaylist(playlistId: Long, mediaId: Long) {
+    private fun getMediaId(filePath: String, callback: (Long) -> Unit) {
+        handleDatabaseResult(storageVariable = {
+            callback(it)
+        }, databaseCall = { playlistAndSongDao.getMediaId(filePath) })
+    }
+
+    private fun removeSongFromPlaylist(playlistId: Long, mediaId: Long) {
         handleDatabaseResult {
             playlistAndSongDao.removeSongFromPlaylist(
                 PlaylistSongCrossRef(
@@ -104,32 +128,18 @@ class PlaylistViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             startLoading()
-            val response: PlaylistState<T> = launchAsync { databaseCall() }
+            val response: DatabaseCallState<T> = launchAsync { databaseCall() }
             when (response) {
-                is PlaylistState.SUCCESS -> {
+                is DatabaseCallState.SUCCESS -> {
                     storageVariable(response.data)
                     resetState()
                 }
 
-                is PlaylistState.ERROR -> {
+                is DatabaseCallState.ERROR -> {
                     errorOccurred(message = response.message)
                 }
             }
         }
     }
-
-    private suspend fun <T : Any> launchAsync(execute: suspend () -> T): PlaylistState<T> {
-        return try {
-            val data = execute()
-            PlaylistState.SUCCESS(data = data)
-        } catch (e: Exception) {
-            PlaylistState.ERROR("message: ${e.message}")
-        }
-    }
-}
-
-sealed class PlaylistState<T : Any> {
-    data class SUCCESS<T : Any>(val data: T) : PlaylistState<T>()
-    data class ERROR<T : Any>(val message: String) : PlaylistState<T>()
 }
 

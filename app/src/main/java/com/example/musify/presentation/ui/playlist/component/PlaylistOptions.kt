@@ -1,4 +1,4 @@
-package com.example.musify.presentation.ui.home.components
+package com.example.musify.presentation.ui.playlist.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,11 +23,10 @@ import com.example.musify.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OptionsBottomSheet(
+fun PlaylistOptions(
     showOptions: (Boolean) -> Unit,
-    addToPlaylistClick: () -> Unit,
-    addToFavouritesClicked: () -> Unit = {}
-) {
+    onRemoveFromPlaylist: () -> Unit,
+    onAddToFav: () -> Unit,){
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(onDismissRequest = { showOptions(false) }, sheetState = sheetState) {
@@ -55,16 +54,16 @@ fun OptionsBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(remember {
-                        Modifier
-                            .clickable { addToPlaylistClick() }
-                    }.padding(10.dp))
+                        Modifier.clickable { onRemoveFromPlaylist() }
+                    })
+                    .padding(10.dp)
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.playlist_icon),
-                    contentDescription = "playlist icon",
+                    contentDescription = "Favourite Icon",
                     modifier = Modifier.size(20.dp)
                 )
-                Text(text = "Add to Playlist")
+                Text(text = "Remove from playlist")
             }
         }
     }

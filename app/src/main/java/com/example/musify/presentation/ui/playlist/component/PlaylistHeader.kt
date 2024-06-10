@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.musify.R
 
 @Composable
-fun PlaylistHeader(onBackClick: () -> Unit) {
+fun PlaylistHeader(title: String, onBackClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(15.dp),
@@ -38,7 +38,7 @@ fun PlaylistHeader(onBackClick: () -> Unit) {
             )
         }
         Text(
-            text = "Your Playlists",
+            text = title,
             modifier = Modifier.weight(8.5f),
             style = MaterialTheme.typography.titleMedium,
             color = colorResource(id = R.color.orange)

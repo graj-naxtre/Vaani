@@ -9,10 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.musify.data.model.AppFolderWithSongs
 import com.example.musify.data.model.FolderWithSongs
 import com.example.musify.data.room_db.dao.PlaylistAndSongDao
+import com.example.musify.data.room_db.entity.Playlist
 import com.example.musify.data.room_db.entity.PlaylistSongCrossRef
 import com.example.musify.domain.repository.MusicRepository
 import com.example.musify.domain.service.MusicController
-import com.example.musify.presentation.viewmodels.AudioFileInfo
+import com.example.musify.presentation.delegates.PlaylistUiStateDelegate
+import com.example.musify.presentation.ui.playlist.DatabaseCallState
+import com.example.musify.presentation.ui.playlist.launchAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -22,8 +25,9 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val musicRepository: MusicRepository,
     private val playlistAndSongDao: PlaylistAndSongDao,
+    private val playlistUiStateDelegate: PlaylistUiStateDelegate,
     private val musicController: MusicController
-) : ViewModel() {
+) : ViewModel(), PlaylistUiStateDelegate by playlistUiStateDelegate {
     var homeUiState by mutableStateOf(HomeUiState())
         private set
 
@@ -38,6 +42,9 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.onFolderIndexChange -> homeUiState =
                 homeUiState.copy(currentFolderIndex = event.index)
+
+            is HomeEvent.AddSongToPlaylist -> homeUiState =
+                homeUiState.copy(songToAddInPlaylist = event.songToAddInPlaylist)
         }
     }
 
@@ -80,19 +87,44 @@ class HomeViewModel @Inject constructor(
 
     private fun resumeSong() = musicController.resume()
 
-    fun addSongToPlaylist(playlistId: Long, audioFileInfo: AudioFileInfo) {
-        viewModelScope.launch {
-            val result = async {
-                playlistAndSongDao.insertSong(audioFileInfo.toSongMapper())
-            }
-            val mediaId = result.await()
+    fun getAllPlaylist(callback: (List<Playlist>) -> Unit) {
+        handleDatabaseResult(storageVariable = {
+            callback(it)
+        }) { playlistAndSongDao.getAllPlaylist() }
+    }
 
-            playlistAndSongDao.addSongToPlaylist(
-                PlaylistSongCrossRef(
-                    playlistId,
-                    mediaId
+    fun addSongToPlaylist(playlistId: Long) {
+        viewModelScope.launch {
+            async {
+                homeUiState.songToAddInPlaylist?.let { playlistAndSongDao.insertSong(it.toSongMapper()) }
+            }.await()?.let { mediaId ->
+                playlistAndSongDao.addSongToPlaylist(
+                    PlaylistSongCrossRef(
+                        playlistId,
+                        mediaId
+                    )
                 )
-            )
+            }
+        }
+    }
+
+    private fun <T : Any> handleDatabaseResult(
+        storageVariable: (T) -> Unit = {},
+        databaseCall: suspend () -> T
+    ) {
+        viewModelScope.launch {
+            startLoading()
+            val response: DatabaseCallState<T> = launchAsync { databaseCall() }
+            when (response) {
+                is DatabaseCallState.SUCCESS -> {
+                    storageVariable(response.data)
+                    resetState()
+                }
+
+                is DatabaseCallState.ERROR -> {
+                    errorOccurred(message = response.message)
+                }
+            }
         }
     }
 }

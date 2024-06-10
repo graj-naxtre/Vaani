@@ -64,7 +64,7 @@ fun PlaylistScreen(
 
     Scaffold(
         topBar = {
-            PlaylistHeader(onBackClick = onBackClick)
+            PlaylistHeader(title = "Your Playlists", onBackClick = onBackClick)
         },
     ) { paddingValues ->
         Column(

@@ -30,8 +30,8 @@ fun PlaylistItem(playlistName: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.DarkGray, shape = RoundedCornerShape(5.dp))
-            .padding(vertical = 10.dp, horizontal = 15.dp)
             .clickable { onClick() }
+            .padding(vertical = 10.dp, horizontal = 15.dp)
     ) {
         Box(
             contentAlignment = Alignment.Center,

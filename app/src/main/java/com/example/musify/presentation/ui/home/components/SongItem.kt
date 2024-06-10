@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,17 +15,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.musify.R
 import com.example.musify.presentation.composables.SongImage
 import com.example.musify.presentation.viewmodels.AudioFileInfo
@@ -35,6 +42,15 @@ fun SongItem(
     songClick: () -> Unit,
     optionClick: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
+    val model = remember {
+        ImageRequest.Builder(context)
+            .data(audioFileInfo.mediaImage)
+            .placeholder(R.drawable.fallback_image)
+            .fallback(R.drawable.fallback_image)
+            .crossfade(true)
+            .build()
+    }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -51,7 +67,12 @@ fun SongItem(
                 .padding(10.dp)
                 .clip(MaterialTheme.shapes.medium)
         ) {
-            SongImage(songImage = audioFileInfo.mediaImage, modifier = Modifier)
+            AsyncImage(
+                model = model,
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.aspectRatio(1f / 1f)
+            )
         }
 
         Column(modifier = Modifier.weight(0.7f)) {

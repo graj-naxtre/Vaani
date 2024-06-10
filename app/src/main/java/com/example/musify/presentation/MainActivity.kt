@@ -54,6 +54,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    companion object{
+        var isInitialized = false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

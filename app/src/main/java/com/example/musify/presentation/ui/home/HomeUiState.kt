@@ -8,5 +8,6 @@ data class HomeUiState(
     val folderWithSongs: List<AppFolderWithSongs> = emptyList(),
     val currentFolderIndex: Int = 0,
     val selectedSong: AudioFileInfo? = null,
+    val songToAddInPlaylist: AudioFileInfo? = null,
     val errorMessage: String? = null
 )

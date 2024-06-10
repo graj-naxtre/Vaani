@@ -1,5 +1,6 @@
 package com.example.musify.presentation.composables
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -36,6 +37,7 @@ import com.example.musify.domain.other.PlayerState
 import com.example.musify.presentation.ui.song.SongEvent
 import com.example.musify.presentation.viewmodels.MusicControllerUiState
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MiniPlayer(
     state: MusicControllerUiState,

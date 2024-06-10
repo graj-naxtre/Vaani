@@ -6,27 +6,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.musify.R
+import com.example.musify.presentation.MainActivity
 
 @Composable
 fun HomeScreenV2(
     onEvent: (HomeEvent) -> Unit,
     uiState: HomeUiState,
     onSearchClick: () -> Unit,
-    onPlaylistClick: () -> Unit
+    onAddToPlaylistClick: () -> Unit
 ) {
-    val isInitialized = rememberSaveable {
-        mutableStateOf(false)
-    }
+    val preloaderLottieComposition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(
+            R.raw.loading
+        )
+    )
 
     LaunchedEffect(key1 = Unit) {
-        if (!isInitialized.value) {
+        if (!MainActivity.isInitialized) {
             Log.d("AppNavigation", "is initialized")
             onEvent(HomeEvent.FetchSongs)
-            isInitialized.value = true
+            MainActivity.isInitialized = true
         }
     }
 
@@ -34,7 +44,11 @@ fun HomeScreenV2(
         when {
             loading == true -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Loading...")
+                    LottieAnimation(
+                        composition = preloaderLottieComposition,
+                        iterations = LottieConstants.IterateForever,
+                        contentScale = ContentScale.Fit
+                    )
                 }
             }
 
@@ -49,6 +63,7 @@ fun HomeScreenV2(
                     uiState = uiState,
                     onEvent = onEvent,
                     onSearchClick = onSearchClick,
+                    onAddToPlaylistClick = onAddToPlaylistClick
                 )
             }
         }

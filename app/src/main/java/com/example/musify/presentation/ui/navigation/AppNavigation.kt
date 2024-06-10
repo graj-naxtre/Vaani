@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.musify.presentation.ui.home.HomeScreenV2
 import com.example.musify.presentation.ui.home.HomeViewModel
+import com.example.musify.presentation.ui.playlist.AddToPlaylist
 import com.example.musify.presentation.ui.playlist.PlaylistScreen
 import com.example.musify.presentation.ui.playlist.PlaylistSongsScreen
 import com.example.musify.presentation.ui.playlist.PlaylistViewModel
@@ -27,54 +28,17 @@ fun AppNavigation(navController: NavHostController) {
         composable(
             route = Destination.Home.route,
             exitTransition = {
-                when (initialState.destination.route) {
-                    Destination.Search.route -> {
-                        slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(700)
-                        )
-                    }
-
-                    Destination.Playlist.route -> {
-                        slideOutOfContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                            tween(700)
-                        )
-                    }
-
-                    else -> ExitTransition.None
-                }
-
+                homeExitTransition()
             },
             popEnterTransition = {
-                when (initialState.destination.route) {
-                    Destination.Search.route -> {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                            animationSpec = tween(700)
-                        )
-                    }
-
-                    Destination.Playlist.route -> {
-                        slideIntoContainer(
-                            towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                            tween(700)
-                        )
-                    }
-
-                    else -> EnterTransition.None
-                }
+                homeEnterTransition()
             }) {
             HomeScreenV2(
                 onEvent = homeViewModel::onEvent,
                 uiState = homeViewModel.homeUiState,
                 onSearchClick = { navController.navigate(Destination.Search.route) },
-                onPlaylistClick = {
-                    navController.navigate(Destination.Playlist.route) {
-                        popUpTo(Destination.Home.route) {
-                            inclusive = false
-                        }
-                    }
+                onAddToPlaylistClick = {
+                    navController.navigate(Destination.AddToPlaylist.route)
                 })
         }
 
@@ -126,10 +90,17 @@ fun AppNavigation(navController: NavHostController) {
             val playlistId = navBackStackEntry.arguments?.getString("playlistId")
             PlaylistSongsScreen(
                 viewModel = playlistViewModel,
+                onEvent = playlistViewModel::onEvent,
                 playlistId = playlistId,
                 onBackClick = {
                     navController.popBackStack()
                 })
+        }
+
+        composable(route = Destination.AddToPlaylist.route){
+            AddToPlaylist(viewModel = homeViewModel) {
+                navController.popBackStack()
+            }
         }
     }
 }

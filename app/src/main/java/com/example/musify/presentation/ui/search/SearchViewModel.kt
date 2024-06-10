@@ -39,7 +39,7 @@ class SearchViewModel @Inject constructor(val musicRepository: MusicRepository) 
     }
 
     private fun fetchAllSongs() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             musicRepository.getAllMediaSongs()
                 .map { folderWithSongs: FolderWithSongs ->
                     folderWithSongs.toAppFolderWithSongs()
@@ -55,7 +55,7 @@ class SearchViewModel @Inject constructor(val musicRepository: MusicRepository) 
     }
 
     fun searchForResults(searchSong: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             // clear previous search results
             _searchResults.value = emptyList()
 
